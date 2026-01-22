@@ -61,41 +61,48 @@
   </div>
 
 <script>
-  const VOTE_API = "COLLE_ICI_TON_URL_WEBAPP"; // sera ajouté plus tard
-  const VEHICLE_ID = "A001";
+const VEHICLE_ID = "A001";
+const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
 
-  const btn = document.getElementById("voteBtn");
-  const msg = document.getElementById("message");
-
-  function getDeviceId() {
-    let id = localStorage.getItem("jct_device_id");
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem("jct_device_id", id);
-    }
-    return id;
+function getDeviceId() {
+  let id = localStorage.getItem("jct_device_id");
+  if (!id) {
+    id = "dev_" + Math.random().toString(36).substring(2, 12);
+    localStorage.setItem("jct_device_id", id);
   }
+  return id;
+}
 
-  btn.addEventListener("click", async () => {
-    btn.disabled = true;
-    msg.textContent = "Enregistrement du vote…";
+function vote() {
+  const msg = document.getElementById("msg");
+  msg.textContent = "Vote en cours…";
 
-    try {
-      const url = `${VOTE_API}?vehicle=${VEHICLE_ID}&device=${getDeviceId()}`;
-      const res = await fetch(url);
-      const data = await res.json();
+  const device = getDeviceId();
+  const callbackName = "cb_" + Date.now();
 
-      if (data.ok) {
-        msg.textContent = "✅ Merci, votre vote a bien été enregistré !";
-      } else {
-        msg.textContent = "❌ " + data.error;
-        btn.disabled = false;
-      }
-    } catch (e) {
-      msg.textContent = "❌ Erreur réseau.";
-      btn.disabled = false;
+  window[callbackName] = function (res) {
+    if (res.ok) {
+      msg.textContent = "✅ Borin'Old Cars vous remercie, votre vote est enregistré !";
+    } else {
+      msg.textContent = "❌ " + (res.error || "Erreur");
     }
-  });
+    delete window[callbackName];
+  };
+
+  const script = document.createElement("script");
+  script.src =
+    API_URL +
+    "?vehicle=" + VEHICLE_ID +
+    "&device=" + device +
+    "&callback=" + callbackName;
+
+  script.onerror = function () {
+    msg.textContent = "❌ Erreur réseau.";
+  };
+
+  document.body.appendChild(script);
+}
 </script>
+
 </body>
 </html>
