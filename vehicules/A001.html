@@ -22,9 +22,7 @@
       padding: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
-    h1 {
-      margin-top: 0;
-    }
+    h1 { margin-top: 0; }
     button {
       background: #111;
       color: #fff;
@@ -61,79 +59,74 @@
   </div>
 
   <script>
-  const VEHICLE_ID = "A001";
-  const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
+    const VEHICLE_ID = "A001";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
 
-  function getDeviceId() {
-    let id = localStorage.getItem("jct_device_id");
-    if (!id) {
-      id = "dev_" + Math.random().toString(36).substring(2, 12);
-      localStorage.setItem("jct_device_id", id);
-    }
-    return id;
-  }
-
-<script>
-const VEHICLE_ID = "A001";
-const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
-
-function getDeviceId() {
-  let id = localStorage.getItem("jct_device_id");
-  if (!id) {
-    id = "dev_" + Math.random().toString(36).substring(2, 12);
-    localStorage.setItem("jct_device_id", id);
-  }
-  return id;
-}
-
-function vote() {
-  const btn = document.querySelector("button");
-  const msg = document.getElementById("msg");
-  msg.textContent = "Vote en cours…";
-  btn.disabled = true;
-
-  const device = encodeURIComponent(getDeviceId());
-  const callbackName = "cb_" + Math.random().toString(36).substring(2, 10);
-
-  // callback (si tout va bien, il s'affiche)
-  window[callbackName] = function (res) {
-    if (res && res.ok) {
-      msg.textContent = "✅ Merci, votre vote est enregistré !";
-    } else {
-      msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
-      btn.disabled = false;
-    }
-    try { delete window[callbackName]; } catch(e) {}
-  };
-
-  const url =
-    API_URL +
-    "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
-    "&device=" + device +
-    "&callback=" + encodeURIComponent(callbackName) +
-    "&t=" + Date.now(); // évite le cache
-
-  const script = document.createElement("script");
-  script.src = url;
-
-  // ✅ si le script charge, on considère que c'est passé
-  // (et si c'était "déjà voté", le callback l'affichera)
-  script.onload = function () {
-    // si le callback n'a pas répondu au bout de 2s, on affiche quand même OK
-    setTimeout(() => {
-      if (msg.textContent === "Vote en cours…") {
-        msg.textContent = "✅ Vote enregistré (si tu recliques, il dira “déjà voté”)";
+    function getDeviceId() {
+      let id = localStorage.getItem("jct_device_id");
+      if (!id) {
+        id = "dev_" + Math.random().toString(36).substring(2, 12);
+        localStorage.setItem("jct_device_id", id);
       }
-    }, 2000);
-  };
+      return id;
+    }
 
-  // ❌ seulement si le script ne se charge PAS du tout
-  script.onerror = function () {
-    msg.textContent = "❌ Erreur réseau (le vote n'a peut-être pas été envoyé).";
-    btn.disabled = false;
-    try { delete window[callbackName]; } catch(e) {}
-  };
+    function vote() {
+      const btn = document.getElementById("voteBtn");
+      const msg = document.getElementById("msg");
 
-  document.body.appendChild(script);
-}
-</script>
+      msg.textContent = "Vote en cours…";
+      btn.disabled = true;
+
+      const device = encodeURIComponent(getDeviceId());
+      const callbackName = "cb_" + Math.random().toString(36).substring(2, 10);
+
+      // Sécurité : si Google répond lentement, on évite de rester bloqué
+      let finished = false;
+      const timeout = setTimeout(() => {
+        if (!finished && msg.textContent === "Vote en cours…") {
+          msg.textContent = "✅ Vote probablement enregistré (si tu recliques, il dira “déjà voté”)";
+          // on réactive le bouton au cas où
+          btn.disabled = false;
+        }
+      }, 2500);
+
+      window[callbackName] = function (res) {
+        finished = true;
+        clearTimeout(timeout);
+
+        if (res && res.ok) {
+          msg.textContent = "✅ Merci, votre vote est enregistré !";
+        } else {
+          msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
+        }
+
+        // si déjà voté, on laisse le bouton actif ou non ? (je le laisse actif)
+        btn.disabled = false;
+
+        try { delete window[callbackName]; } catch(e) {}
+      };
+
+      const script = document.createElement("script");
+      script.src =
+        API_URL +
+        "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
+        "&device=" + device +
+        "&callback=" + encodeURIComponent(callbackName) +
+        "&t=" + Date.now(); // anti-cache
+
+      script.onerror = function () {
+        // Si ça plante vraiment (pas de chargement du script)
+        if (!finished) {
+          clearTimeout(timeout);
+          msg.textContent = "❌ Erreur réseau (le vote n'a peut-être pas été envoyé).";
+          btn.disabled = false;
+          try { delete window[callbackName]; } catch(e) {}
+        }
+      };
+
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
