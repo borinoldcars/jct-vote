@@ -77,24 +77,20 @@ function vote() {
   const msg = document.getElementById("msg");
   msg.textContent = "Vote en cours…";
 
-  const device = getDeviceId();
-  const callbackName = "cb_" + Date.now();
+  const device = encodeURIComponent(getDeviceId());
+  const callbackName = "cb_" + Math.random().toString(36).substring(2, 10);
 
   window[callbackName] = function (res) {
-    if (res.ok) {
-      msg.textContent = "✅ Borin'Old Cars vous remercie, votre vote est enregistré !";
+    if (res && res.ok) {
+      msg.textContent = "✅ Merci, votre vote est enregistré !";
     } else {
-      msg.textContent = "❌ " + (res.error || "Erreur");
+      msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
     }
-    delete window[callbackName];
+    try { delete window[callbackName]; } catch(e) {}
   };
 
   const script = document.createElement("script");
-  script.src =
-    API_URL +
-    "?vehicle=" + VEHICLE_ID +
-    "&device=" + device +
-    "&callback=" + callbackName;
+  script.src = API_URL + "?vehicle=" + VEHICLE_ID + "&device=" + device + "&callback=" + callbackName;
 
   script.onerror = function () {
     msg.textContent = "❌ Erreur réseau.";
@@ -103,6 +99,7 @@ function vote() {
   document.body.appendChild(script);
 }
 </script>
+
 
 </body>
 </html>
