@@ -119,7 +119,7 @@
         // Si ça plante vraiment (pas de chargement du script)
         if (!finished) {
           clearTimeout(timeout);
-          msg.textContent = "Votre vote a été envoyé, Borin'Old Cars vous remercie).";
+          msg.textContent = "Votre vote a été envoyé, Borin'Old Cars vous remercie.";
           btn.disabled = false;
           try { delete window[callbackName]; } catch(e) {}
         }
