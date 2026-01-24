@@ -2,88 +2,125 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <title>Jurbise Classic Tour 2026 – Véhicule</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JCT 2026 – Véhicule A001</title>
+
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f4f4; margin:0; padding:0; }
-    .container { max-width: 720px; margin: auto; padding: 20px; }
-    .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 20px rgba(0,0,0,0.08); }
-    h1 { margin-top:0; }
-    button { background:#111; color:#fff; border:none; padding:14px 18px; border-radius:12px; font-size:16px; cursor:pointer; }
-    button:disabled { opacity:0.5; cursor:not-allowed; }
-    .message { margin-top:15px; font-size:14px; }
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 720px;
+      margin: auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    }
+    button {
+      background: #111;
+      color: white;
+      border: none;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: .5;
+    }
+    .msg {
+      margin-top: 15px;
+      font-size: 14px;
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
     <div class="card">
-      <h1>Véhicule A001</h1>
+      <h1 id="title">Véhicule</h1>
       <p><strong>Jurbise Classic Tour 2026</strong></p>
 
-      <p>Description du véhicule…</p>
+      <p id="description">Chargement…</p>
 
       <button id="voteBtn">Je vote pour ce véhicule</button>
-      <div class="message" id="msg"></div>
+      <div class="msg" id="msg"></div>
     </div>
   </div>
 
-  <script>
-    const VEHICLE_ID = "A001";
-    const API_URL = "https://script.google.com/macros/s/AKfycbx_k6P79MNAm3YHYl429fsgjutRXS8J1J6HZlRVtlPucobVZ3MJ4KjWH1EGaqAj1I7N/exec";
+<script>
+/************ CONFIG ************/
+const API_URL = "https://script.google.com/macros/s/AKfycbzTRLtV2021KZvUTGyEUxyzeukcPrUSXz91A0JiHD7vg_kewOjAdesN8tdiC7alkOk/exec";
 
-    function getDeviceId() {
-      let id = localStorage.getItem("jct_device_id");
-      if (!id) {
-        id = "dev_" + Math.random().toString(36).substring(2, 12);
-        localStorage.setItem("jct_device_id", id);
-      }
-      return id;
+/************ UTILS ************/
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function getDeviceId() {
+  let id = localStorage.getItem("jct_device_id");
+  if (!id) {
+    id = "dev_" + crypto.randomUUID();
+    localStorage.setItem("jct_device_id", id);
+  }
+  return id;
+}
+
+/************ INIT ************/
+const VEHICLE_ID = getParam("id");
+
+if (!VEHICLE_ID) {
+  document.getElementById("description").textContent =
+    "❌ Aucun véhicule spécifié.";
+  document.getElementById("voteBtn").disabled = true;
+}
+
+/************ VOTE ************/
+document.getElementById("voteBtn").addEventListener("click", vote);
+
+function vote() {
+  const btn = document.getElementById("voteBtn");
+  const msg = document.getElementById("msg");
+
+  msg.textContent = "Vote en cours…";
+  btn.disabled = true;
+
+  const callback = "cb_" + Math.random().toString(36).slice(2);
+  const device = encodeURIComponent(getDeviceId());
+
+  window[callback] = function (res) {
+    if (res && res.ok) {
+      msg.textContent = "✅ Merci, votre vote est enregistré !";
+    } else {
+      msg.textContent = "❌ " + (res?.error || "Erreur");
+      btn.disabled = false;
     }
+    delete window[callback];
+  };
 
-    function vote() {
-      const btn = document.getElementById("voteBtn");
-      const msg = document.getElementById("msg");
+  const script = document.createElement("script");
+  script.src =
+    API_URL +
+    "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
+    "&device=" + device +
+    "&callback=" + callback +
+    "&t=" + Date.now();
 
-      msg.textContent = "Vote en cours…";
-      btn.disabled = true;
+  script.onerror = () => {
+    msg.textContent = "❌ Erreur réseau.";
+    btn.disabled = false;
+  };
 
-      const device = encodeURIComponent(getDeviceId());
-      const callbackName = "cb_" + Math.random().toString(36).substring(2, 10);
+  document.body.appendChild(script);
+}
+</script>
 
-      // Réponse de l’Apps Script
-      window[callbackName] = function(res) {
-        if (res && res.ok) {
-          msg.textContent = "✅ Merci, votre vote est enregistré !";
-        } else {
-          msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
-          btn.disabled = false;
-        }
-        try { delete window[callbackName]; } catch(e) {}
-      };
-
-      // Appel JSONP (obligatoire pour GitHub Pages)
-      const url =
-        API_URL +
-        "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
-        "&device=" + device +
-        "&callback=" + encodeURIComponent(callbackName) +
-        "&t=" + Date.now(); // anti-cache
-
-      const script = document.createElement("script");
-      script.src = url;
-
-      // Si le script ne se charge pas du tout
-      script.onerror = function() {
-        msg.textContent = "❌ Erreur réseau. Réessayez.";
-        btn.disabled = false;
-        try { delete window[callbackName]; } catch(e) {}
-      };
-
-      document.body.appendChild(script);
-    }
-
-    document.getElementById("voteBtn").addEventListener("click", vote);
-  </script>
 </body>
 </html>
