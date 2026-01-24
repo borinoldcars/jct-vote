@@ -30,14 +30,19 @@
 const VEHICLE_ID = "A001";
 const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
 
+<script>
+const VOTE_SESSION = "JCT2026_01"; // ← change ce code quand tu veux relancer un vote
+
 function getDeviceId() {
-  let id = localStorage.getItem("jct_device_id");
+  let id = localStorage.getItem("jct_device_id_" + VOTE_SESSION);
   if (!id) {
     id = "dev_" + Math.random().toString(36).slice(2, 12);
-    localStorage.setItem("jct_device_id", id);
+    localStorage.setItem("jct_device_id_" + VOTE_SESSION, id);
   }
   return id;
 }
+</script>
+
 
 document.getElementById("voteBtn").addEventListener("click", vote);
 
