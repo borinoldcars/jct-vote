@@ -5,14 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JCT 2026 – Véhicule A001</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f4f4; margin:0; }
-    .container { max-width:720px; margin:auto; padding:20px; }
-    .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 20px rgba(0,0,0,.08); }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f4f4; margin:0; padding:0; }
+    .container { max-width: 720px; margin: auto; padding: 20px; }
+    .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 20px rgba(0,0,0,0.08); }
+    h1 { margin-top:0; }
     button { background:#111; color:#fff; border:none; padding:14px 18px; border-radius:12px; font-size:16px; cursor:pointer; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
+    button:disabled { opacity:0.5; cursor:not-allowed; }
     .message { margin-top:15px; font-size:14px; }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="card">
@@ -21,71 +23,67 @@
 
       <p>Description du véhicule…</p>
 
-      <button id="voteBtn" type="button">Je vote pour ce véhicule</button>
+      <button id="voteBtn">Je vote pour ce véhicule</button>
       <div class="message" id="msg"></div>
     </div>
   </div>
 
-<script>
-const VEHICLE_ID = "A001";
-const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
+  <script>
+    const VEHICLE_ID = "A001";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyowXHPBAkS6LhG17Tb8EW_R8K3T1OnIWzQPZ1iaoXHvQAMbXqi_APLnbg-oyTQOlsd/exec";
 
-<script>
-const VOTE_SESSION = "JCT2026_01"; // ← change ce code quand tu veux relancer un vote
-
-function getDeviceId() {
-  let id = localStorage.getItem("jct_device_id_" + VOTE_SESSION);
-  if (!id) {
-    id = "dev_" + Math.random().toString(36).slice(2, 12);
-    localStorage.setItem("jct_device_id_" + VOTE_SESSION, id);
-  }
-  return id;
-}
-</script>
-
-
-document.getElementById("voteBtn").addEventListener("click", vote);
-
-function vote() {
-  const btn = document.getElementById("voteBtn");
-  const msg = document.getElementById("msg");
-
-  msg.textContent = "Vote en cours…";
-  btn.disabled = true;
-
-  const device = encodeURIComponent(getDeviceId());
-  const callbackName = "cb_" + Math.random().toString(36).slice(2, 10);
-
-  window[callbackName] = function(res) {
-    if (res && res.ok) {
-      msg.textContent = "✅ Merci, votre vote est enregistré !";
-    } else {
-      msg.textContent = "❌ " + (res && res.error ? res.error : "Erreur");
-      btn.disabled = false;
+    function getDeviceId() {
+      let id = localStorage.getItem("jct_device_id");
+      if (!id) {
+        id = "dev_" + Math.random().toString(36).substring(2, 12);
+        localStorage.setItem("jct_device_id", id);
+      }
+      return id;
     }
-    try { delete window[callbackName]; } catch(e) {}
-    try { script.remove(); } catch(e) {}
-  };
 
-  const url = API_URL
-    + "?vehicle=" + encodeURIComponent(VEHICLE_ID)
-    + "&device=" + device
-    + "&callback=" + encodeURIComponent(callbackName)
-    + "&t=" + Date.now(); // évite cache
+    function vote() {
+      const btn = document.getElementById("voteBtn");
+      const msg = document.getElementById("msg");
 
-  const script = document.createElement("script");
-  script.src = url;
+      msg.textContent = "Vote en cours…";
+      btn.disabled = true;
 
-  // si le script ne se charge pas du tout
-  script.onerror = function() {
-    msg.textContent = "❌ Erreur réseau. Réessaie.";
-    btn.disabled = false;
-    try { delete window[callbackName]; } catch(e) {}
-    try { script.remove(); } catch(e) {}
-  };
+      const device = encodeURIComponent(getDeviceId());
+      const callbackName = "cb_" + Math.random().toString(36).substring(2, 10);
 
-  document.body.appendChild(script);
-}
-</script>
+      // Réponse de l’Apps Script
+      window[callbackName] = function(res) {
+        if (res && res.ok) {
+          msg.textContent = "✅ Merci, votre vote est enregistré !";
+        } else {
+          msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
+          btn.disabled = false;
+        }
+        try { delete window[callbackName]; } catch(e) {}
+      };
+
+      // Appel JSONP (obligatoire pour GitHub Pages)
+      const url =
+        API_URL +
+        "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
+        "&device=" + device +
+        "&callback=" + encodeURIComponent(callbackName) +
+        "&t=" + Date.now(); // anti-cache
+
+      const script = document.createElement("script");
+      script.src = url;
+
+      // Si le script ne se charge pas du tout
+      script.onerror = function() {
+        msg.textContent = "❌ Erreur réseau. Réessayez.";
+        btn.disabled = false;
+        try { delete window[callbackName]; } catch(e) {}
+      };
+
+      document.body.appendChild(script);
+    }
+
+    document.getElementById("voteBtn").addEventListener("click", vote);
+  </script>
 </body>
 </html>
