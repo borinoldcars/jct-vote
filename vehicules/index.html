@@ -2,63 +2,221 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Jurbise Classic Tour 2026 – Véhicule</title>
+  <title>Jurbise Classic Tour 2026 – Vote</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body {
-      font-family: system-ui, Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow: 0 18px 40px rgba(0,0,0,.10);
+      --radius: 18px;
     }
-    .container {
-      max-width: 720px;
-      margin: auto;
-      padding: 20px;
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -100px, #ffffff 0%, var(--bg) 55%);
+      color: var(--text);
     }
-    .card {
-      background: white;
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
+    }
+
+    .card{
+      width:min(860px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .topbar{
+      padding: 18px 22px;
+      background: linear-gradient(90deg, #111827 0%, #1f2937 60%, #111827 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      line-height:1.15;
+    }
+    .brand .small{ font-size:13px; opacity:.85; }
+    .brand .title{ font-weight:800; font-size:16px; letter-spacing:.2px; }
+
+    .chip{
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight:700;
+      font-size: 13px;
+      white-space:nowrap;
+    }
+
+    .content{
+      padding: 22px;
+      display:grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 760px){
+      .content{ grid-template-columns: 1fr; }
+    }
+
+    .h1{
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900;
+      margin: 6px 0 6px 0;
+    }
+
+    .sub{
+      color: var(--muted);
+      font-weight: 600;
+      margin: 0 0 18px 0;
+    }
+
+    .box{
+      border:1px solid var(--border);
       border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.08);
+      padding: 16px;
+      background: #fafafa;
     }
-    button {
-      background: #111;
-      color: white;
-      border: none;
-      padding: 14px 18px;
-      border-radius: 12px;
+
+    .desc{
       font-size: 16px;
-      cursor: pointer;
+      color: #111827;
+      margin: 0;
+      line-height:1.45;
     }
-    button:disabled {
-      opacity: .5;
+
+    .side{
+      border-left: 1px solid var(--border);
+      padding-left: 18px;
     }
-    .msg {
-      margin-top: 15px;
+    @media (max-width: 760px){
+      .side{ border-left:none; padding-left:0; }
+    }
+
+    button{
+      width:100%;
+      border:none;
+      cursor:pointer;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      background: #111;
+      color:#fff;
+      box-shadow: 0 10px 22px rgba(0,0,0,.18);
+      transition: transform .04s ease, opacity .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
+
+    .msg{
+      margin-top: 12px;
       font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
     }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background:#fff;
+    }
+
+    .ok{ border-color:#bbf7d0; background:#ecfdf5; color:#065f46; }
+    .err{ border-color:#fecaca; background:#fef2f2; color:#991b1b; }
+    .info{ border-color:#dbeafe; background:#eff6ff; color:#1e40af; }
+
+    .hint{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .footer{
+      padding: 14px 22px;
+      border-top:1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    a{ color: inherit; }
   </style>
 </head>
 
 <body>
-  <div class="container">
+  <div class="wrap">
     <div class="card">
-      <h1 id="title">Véhicule</h1>
-      <p><strong>Jurbise Classic Tour 2026</strong></p>
+      <div class="topbar">
+        <div class="brand">
+          <div class="small">Borin'Old Cars</div>
+          <div class="title">Jurbise Classic Tour 2026</div>
+        </div>
+        <div class="chip" id="chipVehicle">Véhicule —</div>
+      </div>
 
-      <p id="description">Chargement…</p>
+      <div class="content">
+        <div>
+          <div class="h1" id="title">Véhicule</div>
+          <p class="sub">Vote du public</p>
 
-      <button id="voteBtn">Je vote pour ce véhicule</button>
-      <div class="msg" id="msg"></div>
+          <div class="box">
+            <p class="desc" id="description">Chargement…</p>
+          </div>
+        </div>
+
+        <div class="side">
+          <button id="voteBtn">Je vote pour ce véhicule</button>
+          <div class="msg" id="msg"></div>
+
+          <div class="hint">
+            Règle : <strong>1 vote par appareil</strong> (anti double vote automatique).<br>
+            Si votre vote est refusé, c’est que vous avez déjà voté depuis ce téléphone/navigateur.
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>© Borin'Old Cars</div>
+        <div><a href="mailto:borinoldcars@gmail.com">borinoldcars@gmail.com</a></div>
+      </div>
     </div>
   </div>
 
 <script>
 /************ CONFIG ************/
 const API_URL = "https://script.google.com/macros/s/AKfycbwyo8BYnQ2DvtbWkG3WFAUNAehjCkwbTc2I8embtTbXqn6LQxfl9N5vlB4O16VVlj4v/exec";
-  
+
 /************ UTILS ************/
 function getParam(name) {
   return new URLSearchParams(window.location.search).get(name);
@@ -73,43 +231,37 @@ function getDeviceId() {
   return id;
 }
 
+function setMessage(type, text){
+  const msg = document.getElementById("msg");
+  if (!text) { msg.innerHTML = ""; return; }
+  const cls = type === "ok" ? "ok" : (type === "err" ? "err" : "info");
+  msg.innerHTML = `<span class="badge ${cls}">${text}</span>`;
+}
+
 /************ INIT ************/
-const VEHICLE_ID = getParam("id");
+const VEHICLE_ID = (getParam("id") || "").toUpperCase();
+
+const title = document.getElementById("title");
+const chip  = document.getElementById("chipVehicle");
+const desc  = document.getElementById("description");
+const btn   = document.getElementById("voteBtn");
 
 if (!VEHICLE_ID) {
-  document.getElementById("description").textContent =
-    "❌ Aucun véhicule spécifié.";
-  document.getElementById("voteBtn").disabled = true;
-}
-
-/************ VOTE (robuste) ************/
-const btn = document.getElementById("voteBtn");
-const msg = document.getElementById("msg");
-
-if (!btn) {
-  console.error("❌ #voteBtn introuvable dans la page");
-} else if (!msg) {
-  console.error("❌ #msg introuvable dans la page");
+  title.textContent = "Véhicule";
+  chip.textContent = "Véhicule —";
+  desc.textContent = "❌ Aucun véhicule spécifié dans l’URL (ex: ?id=A001).";
+  btn.disabled = true;
 } else {
-  btn.addEventListener("click", vote);
+  title.textContent = `Véhicule ${VEHICLE_ID}`;
+  chip.textContent  = `Véhicule ${VEHICLE_ID}`;
+  desc.textContent  = "Vous pouvez voter pour ce véhicule.";
 }
 
-function getDeviceId() {
-  let id = localStorage.getItem("jct_device_id");
-  if (!id) {
-    // ✅ fallback si randomUUID indisponible (Safari/iPhone)
-    const uuid = (crypto && crypto.randomUUID)
-      ? crypto.randomUUID()
-      : (Date.now().toString(36) + Math.random().toString(36).slice(2));
-
-    id = "dev_" + uuid;
-    localStorage.setItem("jct_device_id", id);
-  }
-  return id;
-}
+/************ VOTE (robuste JSONP) ************/
+btn.addEventListener("click", vote);
 
 function vote() {
-  msg.textContent = "Vote en cours...";
+  setMessage("info", "⏳ Vote en cours…");
   btn.disabled = true;
 
   const device = getDeviceId();
@@ -121,7 +273,7 @@ function vote() {
   const hardTimeout = setTimeout(() => {
     if (done) return;
     done = true;
-    msg.textContent = "❌ Timeout réseau. Réessaie.";
+    setMessage("err", "❌ Timeout réseau. Réessaie.");
     btn.disabled = false;
     cleanup();
   }, 10000);
@@ -137,9 +289,11 @@ function vote() {
     done = true;
 
     if (res && res.ok) {
-      msg.textContent = "✅ Merci, votre vote est enregistré !";
+      setMessage("ok", "✅ Merci, votre vote est enregistré !");
+      // tu peux laisser le bouton désactivé si tu veux
+      // btn.disabled = true;
     } else {
-      msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
+      setMessage("err", "❌ " + ((res && res.error) ? res.error : "Erreur"));
       btn.disabled = false;
     }
     cleanup();
@@ -158,7 +312,7 @@ function vote() {
   script.onerror = function () {
     if (done) return;
     done = true;
-    msg.textContent = "❌ Erreur réseau. Réessaie.";
+    setMessage("err", "❌ Erreur réseau. Réessaie.");
     btn.disabled = false;
     cleanup();
   };
