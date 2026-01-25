@@ -106,12 +106,14 @@ function vote() {
   };
 
   const script = document.createElement("script");
-  script.src =
-    API_URL +
-    "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
-    "&device=" + device +
-    "&callback=" + callback +
-    "&t=" + Date.now();
+
+script.src =
+  API_URL +
+  "?vehicle=" + encodeURIComponent(VEHICLE_ID) + // A001, A002...
+  "&device=" + encodeURIComponent(device) +
+  "&callback=" + encodeURIComponent(callbackName) +
+  "&t=" + Date.now(); // anti-cache
+
 
   script.onerror = () => {
     msg.textContent = "❌ Erreur réseau.";
