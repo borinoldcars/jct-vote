@@ -96,6 +96,7 @@ function vote() {
   const callbackName = "cb_" + Math.random().toString(36).slice(2);
 
   let done = false;
+  let script = null; // ✅ important
 
   // ⏱️ Sécurité : si rien ne revient, on débloque au bout de 10s
   const hardTimeout = setTimeout(() => {
@@ -109,7 +110,7 @@ function vote() {
   function cleanup() {
     clearTimeout(hardTimeout);
     try { delete window[callbackName]; } catch (e) {}
-    try { script.remove(); } catch (e) {}
+    try { if (script) script.remove(); } catch (e) {}
   }
 
   window[callbackName] = function (res) {
@@ -118,7 +119,7 @@ function vote() {
 
     if (res && res.ok) {
       msg.textContent = "✅ Merci, votre vote est enregistré !";
-      // tu peux laisser le bouton désactivé si tu veux
+      // si tu veux empêcher un 2e clic visuel :
       // btn.disabled = true;
     } else {
       msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
@@ -134,10 +135,9 @@ function vote() {
     "&callback=" + encodeURIComponent(callbackName) +
     "&t=" + Date.now();
 
-  const script = document.createElement("script");
+  script = document.createElement("script");
   script.src = url;
 
-  // si le fichier JS ne se charge pas -> vraie erreur réseau
   script.onerror = function () {
     if (done) return;
     done = true;
@@ -148,8 +148,3 @@ function vote() {
 
   document.body.appendChild(script);
 }
-
-</script>
-
-</body>
-</html>
