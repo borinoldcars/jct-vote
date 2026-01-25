@@ -83,77 +83,85 @@ if (!VEHICLE_ID) {
 }
 
 /************ VOTE (robuste) ************/
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("voteBtn");
-  const msg = document.getElementById("msg");
+const btn = document.getElementById("voteBtn");
+const msg = document.getElementById("msg");
 
-  if (!btn) {
-    console.error("❌ #voteBtn introuvable dans la page");
-    return;
-  }
-  if (!msg) {
-    console.error("❌ #msg introuvable dans la page");
-    return;
-  }
-
+if (!btn) {
+  console.error("❌ #voteBtn introuvable dans la page");
+} else if (!msg) {
+  console.error("❌ #msg introuvable dans la page");
+} else {
   btn.addEventListener("click", vote);
+}
 
-  function vote() {
-    msg.textContent = "Vote en cours...";
-    btn.disabled = true;
+function getDeviceId() {
+  let id = localStorage.getItem("jct_device_id");
+  if (!id) {
+    // ✅ fallback si randomUUID indisponible (Safari/iPhone)
+    const uuid = (crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : (Date.now().toString(36) + Math.random().toString(36).slice(2));
 
-    const device = getDeviceId();
-    const callbackName = "cb_" + Math.random().toString(36).slice(2);
-
-    let done = false;
-    let script = null;
-
-    const hardTimeout = setTimeout(() => {
-      if (done) return;
-      done = true;
-      msg.textContent = "❌ Timeout réseau. Réessaie.";
-      btn.disabled = false;
-      cleanup();
-    }, 10000);
-
-    function cleanup() {
-      clearTimeout(hardTimeout);
-      try { delete window[callbackName]; } catch (e) {}
-      try { if (script) script.remove(); } catch (e) {}
-    }
-
-    window[callbackName] = function (res) {
-      if (done) return;
-      done = true;
-
-      if (res && res.ok) {
-        msg.textContent = "✅ Merci, votre vote est enregistré !";
-      } else {
-        msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
-        btn.disabled = false;
-      }
-      cleanup();
-    };
-
-    const url =
-      API_URL +
-      "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
-      "&device=" + encodeURIComponent(device) +
-      "&callback=" + encodeURIComponent(callbackName) +
-      "&t=" + Date.now();
-
-    script = document.createElement("script");
-    script.src = url;
-
-    script.onerror = function () {
-      if (done) return;
-      done = true;
-      msg.textContent = "❌ Erreur réseau. Réessaie.";
-      btn.disabled = false;
-      cleanup();
-    };
-
-    document.body.appendChild(script);
+    id = "dev_" + uuid;
+    localStorage.setItem("jct_device_id", id);
   }
-});
+  return id;
+}
 
+function vote() {
+  msg.textContent = "Vote en cours...";
+  btn.disabled = true;
+
+  const device = getDeviceId();
+  const callbackName = "cb_" + Math.random().toString(36).slice(2);
+
+  let done = false;
+  let script = null;
+
+  const hardTimeout = setTimeout(() => {
+    if (done) return;
+    done = true;
+    msg.textContent = "❌ Timeout réseau. Réessaie.";
+    btn.disabled = false;
+    cleanup();
+  }, 10000);
+
+  function cleanup() {
+    clearTimeout(hardTimeout);
+    try { delete window[callbackName]; } catch (e) {}
+    try { if (script) script.remove(); } catch (e) {}
+  }
+
+  window[callbackName] = function (res) {
+    if (done) return;
+    done = true;
+
+    if (res && res.ok) {
+      msg.textContent = "✅ Merci, votre vote est enregistré !";
+    } else {
+      msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
+      btn.disabled = false;
+    }
+    cleanup();
+  };
+
+  const url =
+    API_URL +
+    "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
+    "&device=" + encodeURIComponent(device) +
+    "&callback=" + encodeURIComponent(callbackName) +
+    "&t=" + Date.now();
+
+  script = document.createElement("script");
+  script.src = url;
+
+  script.onerror = function () {
+    if (done) return;
+    done = true;
+    msg.textContent = "❌ Erreur réseau. Réessaie.";
+    btn.disabled = false;
+    cleanup();
+  };
+
+  document.body.appendChild(script);
+}
