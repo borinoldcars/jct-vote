@@ -270,7 +270,47 @@ function setMessage(type, text){
 
 /************ INIT ************/
 const VEHICLE_ID = (getParam("id") || "").toUpperCase();
+/************ INFOS VEHICULE (marque / modèle) ************/
+(function loadVehicleInfo() {
+  if (!VEHICLE_ID) return;
 
+  const callbackName = "info_" + Math.random().toString(36).slice(2);
+
+  window[callbackName] = function (res) {
+    try {
+      if (res && res.ok) {
+        const titre = (res.marque + " " + res.modele).trim();
+        document.getElementById("title").textContent = titre || ("Véhicule " + VEHICLE_ID);
+        document.title = "Jurbise Classic Tour 2026 – " + (titre || VEHICLE_ID);
+        document.getElementById("description").textContent = "Vous pouvez voter pour ce véhicule.";
+      } else {
+        document.getElementById("title").textContent = "Véhicule " + VEHICLE_ID;
+        document.getElementById("description").textContent = "Vous pouvez voter pour ce véhicule.";
+      }
+    } finally {
+      try { delete window[callbackName]; } catch(e) {}
+      try { script.remove(); } catch(e) {}
+    }
+  };
+
+  const url =
+    API_URL +
+    "?info=1" +
+    "&vehicle=" + encodeURIComponent(VEHICLE_ID) +
+    "&callback=" + encodeURIComponent(callbackName) +
+    "&t=" + Date.now();
+
+  const script = document.createElement("script");
+  script.src = url;
+  script.onerror = function () {
+    document.getElementById("title").textContent = "Véhicule " + VEHICLE_ID;
+    document.getElementById("description").textContent = "Vous pouvez voter pour ce véhicule.";
+    try { delete window[callbackName]; } catch(e) {}
+    try { script.remove(); } catch(e) {}
+  };
+
+  document.body.appendChild(script);
+})();
 const title = document.getElementById("title");
 const chip  = document.getElementById("chipVehicle");
 const desc  = document.getElementById("description");
