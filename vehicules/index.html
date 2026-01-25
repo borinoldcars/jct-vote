@@ -89,39 +89,66 @@ function vote() {
   const btn = document.getElementById("voteBtn");
   const msg = document.getElementById("msg");
 
-  msg.textContent = "Vote en cours…";
+  msg.textContent = "Vote en cours...";
   btn.disabled = true;
 
-  const callback = "cb_" + Math.random().toString(36).slice(2);
-  const device = encodeURIComponent(getDeviceId());
+  const device = getDeviceId();
+  const callbackName = "cb_" + Math.random().toString(36).slice(2);
 
-  window[callback] = function (res) {
+  let done = false;
+
+  // ⏱️ Sécurité : si rien ne revient, on débloque au bout de 10s
+  const hardTimeout = setTimeout(() => {
+    if (done) return;
+    done = true;
+    msg.textContent = "❌ Timeout réseau. Réessaie.";
+    btn.disabled = false;
+    cleanup();
+  }, 10000);
+
+  function cleanup() {
+    clearTimeout(hardTimeout);
+    try { delete window[callbackName]; } catch (e) {}
+    try { script.remove(); } catch (e) {}
+  }
+
+  window[callbackName] = function (res) {
+    if (done) return;
+    done = true;
+
     if (res && res.ok) {
       msg.textContent = "✅ Merci, votre vote est enregistré !";
+      // tu peux laisser le bouton désactivé si tu veux
+      // btn.disabled = true;
     } else {
-      msg.textContent = "❌ " + (res?.error || "Erreur");
+      msg.textContent = "❌ " + ((res && res.error) ? res.error : "Erreur");
       btn.disabled = false;
     }
-    delete window[callback];
+    cleanup();
   };
 
+  const url =
+    API_URL +
+    "?vehicle=" + encodeURIComponent(VEHICLE_ID) +
+    "&device=" + encodeURIComponent(device) +
+    "&callback=" + encodeURIComponent(callbackName) +
+    "&t=" + Date.now();
+
   const script = document.createElement("script");
+  script.src = url;
 
-script.src =
-  API_URL +
-  "?vehicle=" + encodeURIComponent(VEHICLE_ID) + // A001, A002...
-  "&device=" + encodeURIComponent(device) +
-  "&callback=" + encodeURIComponent(callbackName) +
-  "&t=" + Date.now(); // anti-cache
-
-
-  script.onerror = () => {
-    msg.textContent = "❌ Erreur réseau.";
+  // si le fichier JS ne se charge pas -> vraie erreur réseau
+  script.onerror = function () {
+    if (done) return;
+    done = true;
+    msg.textContent = "❌ Erreur réseau. Réessaie.";
     btn.disabled = false;
+    cleanup();
   };
 
   document.body.appendChild(script);
 }
+
 </script>
 
 </body>
